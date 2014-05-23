@@ -31,6 +31,17 @@ def s3_generate_branches(buckets, s3)
     branches = s3_branch_build(object.objects, bucket, s3) ##Refactor .5!!!!!!!!!!!!!
 
     structure[buc.name] = Node.new(object.counter, object.size, branches)
+    
+    puts "bucket structure: #{buc.name}:  #{structure[buc.name]}"
+    if structure[buc.name].objects
+      structure[buc.name].objects.each_value do |v|
+        structure[buc.name].counter += v.counter
+        structure[buc.name].size += v.size
+      end
+    end
+    
+    #structure[buc.name].counter += 
+    #structure[buc.name].size +=
   end
   
   return structure
@@ -40,7 +51,7 @@ end
 #Input: branches, bucket, s3
 #Output: (hash) of branch's {objectname => Node(?,?,branch)}
 def s3_branch_build(branches, bucket, s3, continue = true)
-  branch_structure = {}
+  bstruct = {}
   puts "Entering s3_branch_build for bucket #{bucket.name} and branches #{branches}"
   
   unless branches #empty branch
@@ -48,12 +59,38 @@ def s3_branch_build(branches, bucket, s3, continue = true)
     return nil
   end
   
-  branches.each do |branch|
-    puts "entered s3_branch_build .each loop for branch #{branches}"
-    object = s3_object_info(branch, bucket)
-    branch_structure[branch.prefix] = Node.new(object.counter, object.size, continue ? s3_branch_build(object.objects, bucket, s3, false) : s3_branchnode_info(object.objects, bucket)) #fix up branches parameter
-  end
-  return branch_structure
+  branches.each do |b|
+    puts "entered s3_branch_build .each loop for branch #{b.prefix}"
+    object = s3_object_info(b, bucket)
+    bstruct[b.prefix] = Node.new(object.counter, object.size, continue ? s3_branch_build(object.objects, bucket, s3, false) : s3_branchnode_info(object.objects, bucket))
+
+    puts "branch structure for #{b.prefix}: #{bstruct[b.prefix].objects}"
+    if bstruct[b.prefix].objects #if NOT nil in objects
+      if bstruct[b.prefix].objects.is_a? Node
+        puts "1.1: the bstruct is holding object: #{bstruct[b.prefix].objects}"
+        bstruct[b.prefix].size += bstruct[b.prefix].objects.size
+        bstruct[b.prefix].counter += bstruct[b.prefix].objects.counter
+        puts "1.2: the bstruct is holding object: #{bstruct[b.prefix].objects}"
+        puts "1.3:from #{bstruct[b.prefix]} added #{bstruct[b.prefix].objects.size} as size and #{bstruct[b.prefix].objects.counter} as counter}"
+      else
+        bstruct[b.prefix].objects.each_pair do |branch, struct|
+          puts "struct: #{struct}"
+          if struct.objects == nil
+            bstruct[b.prefix].size += struct.size
+            bstruct[b.prefix].counter += struct.counter
+            puts "2:from #{bstruct[b.prefix]} added #{struct.size} as size and #{struct.counter} as counter}"
+          else
+            bstruct[b.prefix].size += struct.size
+            bstruct[b.prefix].counter += struct.counter
+            puts "3:from #{bstruct[b.prefix]} added #{struct.size} as size and #{struct.counter} as counter}"
+          end #if
+        end #do
+      end #if
+    end #if
+    puts "exit s3_branch_build .each loop for branch #{b.prefix}"
+  end #branches.each
+  
+  return bstruct
 end
 
 #function: input object, and then return its info
