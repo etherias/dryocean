@@ -1,0 +1,14 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Message:</strong>
+  <%= @hello_message.message %>
+</p>
+
+<p>
+  <strong>Times shown:</strong>
+  <%= @hello_message.times_shown %>
+</p>
+
+<%= link_to 'Edit', edit_hello_message_path(@hello_message) %> |
+<%= link_to 'Back', hello_messages_path %>

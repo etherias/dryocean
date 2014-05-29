@@ -1,4 +1,6 @@
 class Node < Struct.new(:counter, :size, :objects); end
+require 'csv'
+require 'json'
 
 #Function: Driver class
 #Input: (int) depth level
@@ -14,6 +16,9 @@ def s3_explorer(depth = 3)
     puts "Switching to Region: #{s3.config.region}"
     s3_structure << structure = s3_generate_branches(buckets, s3)
   end
+  
+  output = s3_structure.to_json
+  puts output
   return s3_structure
 end
 
@@ -123,3 +128,32 @@ def s3_branchnode_info(branch, bucket)
     return nil
   end
 end
+
+#function: write contents of Structure to csv file
+#input: completed Structure containing hash/struct
+#output: writing to csv
+def struct_to_csv(structure)
+  restructured = {}
+  #Set the CSV headers: Prefix,Level,Counter,Size
+  csv_output = "Prefix,Depth,Counter,Size\n"
+  structure.each{|region| region.each_pair{|bucket, content| restructured[bucket] = content}}
+  
+  restructured.each_pair do |bucket, struct|
+    #Print the bucket and also the stats after getting them
+    csv_output << "#{bucket},1,#{struct.counter},#{struct.size}\n"
+    if struct.objects then
+      struct.objects.each_pair do |prefix2, struct2|
+        csv_output << "#{prefix2},2,#{struct2.counter},#{struct2.size}\n"
+        
+        if struct2.objects then
+          struct2.objects.each_pair do |prefix3, struct3|
+           csv_output << "#{prefix3},3,#{struct3.counter},#{struct3.size}\n"
+          end #struct objects each 3
+        end #if struct3.objects 
+      end#struct objects each 2
+    end #if struct.objects
+  end#restructured each end
+  
+  File.open("result.csv",'w'){|f|f.write(csv_output)}
+  puts "Results has been outputted under name result.csv"
+end #class end

@@ -1,0 +1,10 @@
+Prefix,Depth,Counter,Size
+mike.secret.2,1,4,24
+buck2/,2,2,12
+buck2/yum/,3,1,6
+buck3/,2,1,6
+mike.test.buck,1,1,6
+mike_secret_bucket,1,8,48
+bucktest/,2,5,30
+bucktest/buck2/,3,3,18
+bucktestoptional/,2,1,6

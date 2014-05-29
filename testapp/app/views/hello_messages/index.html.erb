@@ -1,0 +1,29 @@
+<h1>Listing hello_messages</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Message</th>
+      <th>Times shown</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @hello_messages.each do |hello_message| %>
+      <tr>
+        <td><%= hello_message.message %></td>
+        <td><%= hello_message.times_shown %></td>
+        <td><%= link_to 'Show', hello_message %></td>
+        <td><%= link_to 'Edit', edit_hello_message_path(hello_message) %></td>
+        <td><%= link_to 'Destroy', hello_message, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Hello message', new_hello_message_path %>
